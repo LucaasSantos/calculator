@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora MNQ - Trade Risk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #0b0e14;
+      --card-bg: #151a23;
+      --border: #232a36;
+      --accent: #3b82f6;
+      --green: #10b981;
+      --green-glow: rgba(16, 185, 129, 0.15);
+      --red: #ef4444;
+      --red-glow: rgba(239, 68, 68, 0.15);
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 460px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: var(--text);
+    }
+
+    .tag {
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--accent);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    input, select {
+      width: 100%;
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-size: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .preset-btns {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .btn-preset {
+      background: #0d1117;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-preset:hover {
+      background: var(--border);
+      color: var(--text);
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 28px;
+    }
+
+    .card-result {
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+    }
+
+    .card-tp {
+      background: var(--green-glow);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .card-sl {
+      background: var(--red-glow);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .card-result .title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .card-tp .title { color: var(--green); }
+    .card-sl .title { color: var(--red); }
+
+    .card-result .value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    .card-tp .value { color: var(--green); }
+    .card-sl .value { color: var(--red); }
+
+    .card-result .sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .ratio-bar {
+      margin-top: 20px;
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ratio-bar .label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .ratio-bar .val {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>Calculadora MNQ</h1>
+      <span class="tag">0.01 = $0,50 / tick</span>
+    </div>
+
+    <!-- Modo de Entrada -->
+    <div class="form-group">
+      <label for="input-mode">Unidade dos Alvos</label>
+      <select id="input-mode">
+        <option value="ticks" selected>Ticks</option>
+        <option value="points">Pontos (1 Ponto = 4 Ticks)</option>
+      </select>
+    </div>
+
+    <!-- Lote -->
+    <div class="form-group">
+      <label for="contracts">Lote Utilizado</label>
+      <input type="number" id="contracts" value="0.01" step="0.01" min="0.01">
+      <div class="preset-btns">
+        <button class="btn-preset" onclick="setContracts(0.01)">0.01</button>
+        <button class="btn-preset" onclick="setContracts(0.05)">0.05</button>
+        <button class="btn-preset" onclick="setContracts(0.10)">0.10</button>
+        <button class="btn-preset" onclick="setContracts(0.50)">0.50</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- TP -->
+      <div class="form-group">
+        <label for="tp" id="label-tp">Take Profit (Ticks)</label>
+        <input type="number" id="tp" value="100" step="1">
+      </div>
+
+      <!-- SL -->
+      <div class="form-group">
+        <label for="sl" id="label-sl">Stop Loss (Ticks)</label>
+        <input type="number" id="sl" value="200" step="1">
+      </div>
+    </div>
+
+    <!-- Resultados -->
+    <div class="results-grid">
+      <div class="card-result card-tp">
+        <div class="title">Ganho (TP)</div>
+        <div class="value" id="tp-res">$0.00</div>
+        <div class="sub" id="tp-sub">0 Ticks / 0 Pts</div>
+      </div>
+
+      <div class="card-result card-sl">
+        <div class="title">Risco (SL)</div>
+        <div class="value" id="sl-res">-$0.00</div>
+        <div class="sub" id="sl-sub">0 Ticks / 0 Pts</div>
+      </div>
+    </div>
+
+    <!-- Risk / Reward -->
+    <div class="ratio-bar">
+      <span class="label">Relação Risco : Retorno</span>
+      <span class="val" id="rr-ratio">1 : 0.50</span>
+    </div>
+  </div>
+
+  <script>
+    const contractsInput = document.getElementById('contracts');
+    const tpInput = document.getElementById('tp');
+    const slInput = document.getElementById('sl');
+    const inputMode = document.getElementById('input-mode');
+
+    const labelTp = document.getElementById('label-tp');
+    const labelSl = document.getElementById('label-sl');
+
+    const tpRes = document.getElementById('tp-res');
+    const slRes = document.getElementById('sl-res');
+    const tpSub = document.getElementById('tp-sub');
+    const slSub = document.getElementById('sl-sub');
+    const rrRatio = document.getElementById('rr-ratio');
+
+    function calculate() {
+      const lote = parseFloat(contractsInput.value) || 0;
+      const rawTp = parseFloat(tpInput.value) || 0;
+      const rawSl = parseFloat(slInput.value) || 0;
+      const isPoints = inputMode.value === 'points';
+
+      // Atualiza rótulos
+      labelTp.textContent = isPoints ? 'Take Profit (Pontos)' : 'Take Profit (Ticks)';
+      labelSl.textContent = isPoints ? 'Stop Loss (Pontos)' : 'Stop Loss (Ticks)';
+
+      // Converter tudo para Ticks internamente
+      const tpTicks = isPoints ? rawTp * 4 : rawTp;
+      const slTicks = isPoints ? rawSl * 4 : rawSl;
+
+      const tpPoints = tpTicks / 4;
+      const slPoints = slTicks / 4;
+
+      // Regra: 1 tick no lote 0.01 vale $0.50
+      // Valor por tick = (Lote / 0.01) * 0.50 = Lote * 50
+      const valorPorTick = lote * 50;
+
+      const tpDollar = tpTicks * valorPorTick;
+      const slDollar = slTicks * valorPorTick;
+
+      tpRes.textContent = `$${tpDollar.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      slRes.textContent = `-$${slDollar.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+      tpSub.textContent = `${tpTicks} Ticks (${tpPoints} Pts)`;
+      slSub.textContent = `${slTicks} Ticks (${slPoints} Pts)`;
+
+      if (slTicks > 0) {
+        const ratio = (tpTicks / slTicks).toFixed(2);
+        rrRatio.textContent = `1 : ${ratio}`;
+      } else {
+        rrRatio.textContent = `1 : --`;
+      }
+    }
+
+    function setContracts(val) {
+      contractsInput.value = val;
+      calculate();
+    }
+
+    [contractsInput, tpInput, slInput, inputMode].forEach(input => {
+      input.addEventListener('input', calculate);
+    });
+
+    calculate();
+  </script>
+</body>
+</html>
