@@ -138,7 +138,7 @@
 
     <div class="form-group">
       <label for="contracts">Lote utilizado</label>
-      <input type="number" id="contracts" value="0.01" step="0.01" min="0.01" inputmode="decimal">
+      <input type="number" id="contracts" value="0.10" step="0.01" min="0.01" inputmode="decimal">
       <div class="preset-btns">
         <button class="btn-preset" onclick="setContracts(0.01)">0.01</button>
         <button class="btn-preset" onclick="setContracts(0.05)">0.05</button>
@@ -171,7 +171,7 @@
       <div class="level-head"><span class="level-name">TP1</span><span class="level-value" id="tp1-res">$0.00</span></div>
       <div class="row">
         <div><div class="mini-label" id="label-tp1">Alvo (Ticks)</div><input type="number" id="tp1" value="100" step="1" inputmode="decimal"></div>
-        <div><div class="mini-label">% da posição</div><input type="number" id="pct1" value="50" step="5" min="0" max="100" inputmode="decimal"></div>
+        <div><div class="mini-label">Lote a encerrar</div><input type="number" id="pct1" value="0.05" step="0.01" min="0" inputmode="decimal"></div>
       </div>
       <div class="level-sub" id="tp1-sub"></div>
     </div>
@@ -180,7 +180,7 @@
       <div class="level-head"><span class="level-name">TP2</span><span class="level-value" id="tp2-res">$0.00</span></div>
       <div class="row">
         <div><div class="mini-label" id="label-tp2">Alvo (Ticks)</div><input type="number" id="tp2" value="200" step="1" inputmode="decimal"></div>
-        <div><div class="mini-label">% da posição</div><input type="number" id="pct2" value="30" step="5" min="0" max="100" inputmode="decimal"></div>
+        <div><div class="mini-label">Lote a encerrar</div><input type="number" id="pct2" value="0.03" step="0.01" min="0" inputmode="decimal"></div>
       </div>
       <div class="level-sub" id="tp2-sub"></div>
     </div>
@@ -189,11 +189,11 @@
       <div class="level-head"><span class="level-name">TP3</span><span class="level-value" id="tp3-res">$0.00</span></div>
       <div class="row">
         <div><div class="mini-label" id="label-tp3">Alvo (Ticks)</div><input type="number" id="tp3" value="400" step="1" inputmode="decimal"></div>
-        <div><div class="mini-label">% da posição</div><input type="number" id="pct3" value="20" step="5" min="0" max="100" inputmode="decimal"></div>
+        <div><div class="mini-label">Lote a encerrar</div><input type="number" id="pct3" value="0.02" step="0.01" min="0" inputmode="decimal"></div>
       </div>
       <div class="level-sub" id="tp3-sub"></div>
     </div>
-    <div class="hint">Deixe o alvo em 0 para desativar um TP. Cada resultado já considera só a parte da posição fechada naquele alvo.</div>
+    <div class="hint">Informe o lote que será encerrado em cada alvo. Deixe o alvo em 0 para desativar um TP. Cada resultado considera só o lote fechado naquele alvo.</div>
     <div class="warn" id="warn-pct"></div>
 
     </div>
@@ -230,9 +230,9 @@
     const $ = id => document.getElementById(id);
     const TICK_SIZE = 0.25;       // 1 tick = 0.25 ponto
     const USD_PER_TICK_LOT = 50;  // lote 1.00 = $50 por tick (0.01 = $0,50)
-    const STORE_KEY = 'mnq-calc-v2';
+    const STORE_KEY = 'mnq-calc-v3';
     const FIELDS = ['input-mode','direction','contracts','entry','sl','tp1','pct1','tp2','pct2','tp3','pct3','balance','riskpct'];
-    const DEFAULTS = { 'input-mode':'ticks', direction:'1', contracts:'0.01', entry:'', sl:'200', tp1:'100', pct1:'50', tp2:'200', pct2:'30', tp3:'400', pct3:'20', balance:'', riskpct:'1' };
+    const DEFAULTS = { 'input-mode':'ticks', direction:'1', contracts:'0.10', entry:'', sl:'200', tp1:'100', pct1:'0.05', tp2:'200', pct2:'0.03', tp3:'400', pct3:'0.02', balance:'', riskpct:'1' };
     let suggestedLot = 0;
 
     const fmt = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -269,34 +269,36 @@
       // Take profits
       const tps = [1,2,3].map(i => {
         const ticks = num('tp' + i) * f;
-        const pct = num('pct' + i);
-        const active = ticks > 0 && pct > 0;
-        const gain = active ? ticks * perTick * (pct / 100) : 0;
-        return { i, ticks, pct, active, gain };
+        const lots = Math.round(num('pct' + i) * 100) / 100;
+        const active = ticks > 0 && lots > 0;
+        const gain = active ? ticks * USD_PER_TICK_LOT * lots : 0;
+        return { i, ticks, lots, active, gain };
       });
 
       tps.forEach(t => {
         paint('tp' + t.i + '-res', t.gain);
         $('tp' + t.i + '-sub').textContent = t.active
-          ? `${t.ticks} Ticks / ${t.ticks / 4} Pts · fecha ${t.pct}% (${(lote * t.pct / 100).toFixed(3)} lote)` + (hasEntry ? ` · preço ${price(entry, dir, t.ticks, 1)}` : '')
+          ? `${t.ticks} Ticks / ${t.ticks / 4} Pts · fecha ${t.lots.toFixed(2)} lote${lote > 0 ? ' (' + Math.round(t.lots / lote * 100) + '% da posição)' : ''}` + (hasEntry ? ` · preço ${price(entry, dir, t.ticks, 1)}` : '')
           : 'Desativado';
       });
 
-      // Warning when % doesn't sum to 100
+      // Aviso quando a soma dos lotes dos TPs difere do lote total
       const active = tps.filter(t => t.active);
-      const sumPct = active.reduce((s, t) => s + t.pct, 0);
+      const sumLots = Math.round(active.reduce((s, t) => s + t.lots, 0) * 100) / 100;
       const warn = $('warn-pct');
-      if (active.length && Math.abs(sumPct - 100) > 0.001) {
+      if (active.length && sumLots !== lote) {
         warn.style.display = 'block';
-        warn.textContent = `As parciais somam ${sumPct}%. Ajuste para 100% para fechar a posição inteira.`;
+        warn.textContent = sumLots > lote
+          ? `Os TPs somam ${sumLots.toFixed(2)} lote, mais que o lote total (${lote.toFixed(2)}). Reduza as parciais.`
+          : `Os TPs somam ${sumLots.toFixed(2)} lote; sobram ${(lote - sumLots).toFixed(2)} lote sem alvo definido.`;
       } else { warn.style.display = 'none'; }
 
       // Scenarios
       const totalAll = active.reduce((s, t) => s + t.gain, 0);
       const first = active[0];
-      const remaining = first ? Math.max(0, 100 - first.pct) / 100 : 1;
+      const remainingLots = first ? Math.max(0, Math.round((lote - first.lots) * 100) / 100) : lote;
       paint('sc-stop', -risk);
-      paint('sc-tp1-stop', first ? first.gain - slTicks * perTick * remaining : -risk);
+      paint('sc-tp1-stop', first ? first.gain - slTicks * USD_PER_TICK_LOT * remainingLots : -risk);
       paint('sc-tp1-be', first ? first.gain : 0);
       paint('sc-all', totalAll);
 
