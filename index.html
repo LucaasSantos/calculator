@@ -25,8 +25,8 @@
       --text: #f3f4f6; --text-muted: #9ca3af;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; padding: 20px; }
-    .container { width: 100%; max-width: 460px; height: fit-content; background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,.4); }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; min-height: 100dvh; display: flex; justify-content: center; align-items: flex-start; padding: 12px; }
+    .container { width: 100%; max-width: 480px; height: fit-content; background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: 0 20px 40px rgba(0,0,0,.4); }
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
     .header h1 { font-size: 1.1rem; font-weight: 600; }
     .tag { background: rgba(59,130,246,.1); color: var(--accent); padding: 4px 10px; border-radius: 6px; font-size: .75rem; font-weight: 600; font-family: 'JetBrains Mono', monospace; border: 1px solid rgba(59,130,246,.2); }
@@ -72,6 +72,41 @@
     .btn-apply:disabled { opacity: .4; cursor: default; }
     .warn { display: none; margin-top: 8px; font-size: .75rem; color: var(--amber); }
     .btn-reset { margin-top: 18px; width: 100%; background: transparent; color: var(--text-muted); border: 1px solid var(--border); border-radius: 8px; padding: 9px; font-size: .75rem; cursor: pointer; }
+
+    /* ---------- Layout responsivo ---------- */
+    .layout { display: grid; grid-template-columns: 1fr; gap: 0; }
+    .panel { min-width: 0; }
+    .panel > .section-title:first-child { margin-top: 0; }
+
+    /* Celulares bem estreitos */
+    @media (max-width: 360px) {
+      .container { padding: 12px; }
+      .row { gap: 8px; }
+      .level-value { font-size: 1rem; }
+      .tag { font-size: .65rem; padding: 3px 7px; }
+    }
+
+    /* Celular grande / tablet em pe */
+    @media (min-width: 480px) {
+      body { padding: 20px; }
+      .container { padding: 24px; }
+    }
+
+    /* Tablet deitado e notebook pequeno: 2 colunas */
+    @media (min-width: 760px) {
+      body { align-items: center; padding: 28px; }
+      .container { max-width: 880px; }
+      .layout { grid-template-columns: 1fr 1fr; column-gap: 28px; }
+      .panel:nth-child(3) { grid-column: 1 / -1; border-top: 1px solid var(--border); margin-top: 8px; padding-top: 4px; }
+    }
+
+    /* Desktop: 3 colunas lado a lado */
+    @media (min-width: 1080px) {
+      .container { max-width: 1240px; padding: 32px; }
+      .layout { grid-template-columns: 1fr 1.15fr 1fr; column-gap: 32px; }
+      .panel:nth-child(3) { grid-column: auto; border-top: 0; margin-top: 0; padding-top: 0; }
+      .panel:not(:first-child) { border-left: 1px solid var(--border); padding-left: 32px; }
+    }
   </style>
 </head>
 <body>
@@ -81,6 +116,9 @@
       <span class="tag">0.01 = $0,50 / tick</span>
     </div>
 
+    <div class="layout">
+    <div class="panel">
+    <div class="section-title">Parâmetros da operação</div>
     <div class="row">
       <div class="form-group">
         <label for="input-mode">Unidade dos alvos</label>
@@ -125,6 +163,8 @@
       <div class="level-sub" id="sl-sub">0 Ticks / 0 Pts</div>
     </div>
 
+    </div>
+    <div class="panel">
     <div class="section-title">Take Profits (parciais)</div>
 
     <div class="level tp">
@@ -156,6 +196,8 @@
     <div class="hint">Deixe o alvo em 0 para desativar um TP. Cada resultado já considera só a parte da posição fechada naquele alvo.</div>
     <div class="warn" id="warn-pct"></div>
 
+    </div>
+    <div class="panel">
     <div class="section-title">Cenários da operação</div>
     <div class="scenarios">
       <div class="sc-row"><span>Stop direto (perde tudo)</span><span class="num neg" id="sc-stop">-$0.00</span></div>
@@ -180,6 +222,8 @@
     </div>
 
     <button class="btn-reset" onclick="resetAll()">Restaurar valores padrão</button>
+    </div>
+    </div>
   </div>
 
   <script>
