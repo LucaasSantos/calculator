@@ -4,244 +4,103 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Calculadora MNQ</title>
-  
-  <!-- Configurações PWA / App Mobile -->
+
   <meta name="theme-color" content="#0b0e14">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="MNQ Risk">
-  
-  <!-- Manifest Embutido via Data URI -->
+
   <link rel="manifest" href='data:application/manifest+json,{"name":"Calculadora MNQ Risk","short_name":"MNQ Risk","start_url":".","display":"standalone","background_color":"#0b0e14","theme_color":"#0b0e14","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2422/2422776.png","sizes":"512x512","type":"image/png"}]}'>
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2422/2422776.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  
+
   <style>
     :root {
-      --bg: #0b0e14;
-      --card-bg: #151a23;
-      --border: #232a36;
-      --accent: #3b82f6;
-      --green: #10b981;
-      --green-glow: rgba(16, 185, 129, 0.15);
-      --red: #ef4444;
-      --red-glow: rgba(239, 68, 68, 0.15);
-      --text: #f3f4f6;
-      --text-muted: #9ca3af;
+      --bg: #0b0e14; --card-bg: #151a23; --field: #0d1117; --border: #232a36;
+      --accent: #3b82f6; --green: #10b981; --green-glow: rgba(16,185,129,.12);
+      --red: #ef4444; --red-glow: rgba(239,68,68,.12); --amber: #f59e0b;
+      --text: #f3f4f6; --text-muted: #9ca3af;
     }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; padding: 20px; }
+    .container { width: 100%; max-width: 460px; height: fit-content; background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,.4); }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+    .header h1 { font-size: 1.1rem; font-weight: 600; }
+    .tag { background: rgba(59,130,246,.1); color: var(--accent); padding: 4px 10px; border-radius: 6px; font-size: .75rem; font-weight: 600; font-family: 'JetBrains Mono', monospace; border: 1px solid rgba(59,130,246,.2); }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: .8rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; }
+    input, select { width: 100%; background: var(--field); border: 1px solid var(--border); border-radius: 10px; padding: 11px 12px; color: var(--text); font-size: 1rem; font-family: 'JetBrains Mono', monospace; outline: none; transition: all .2s ease; }
+    input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .preset-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
+    .btn-preset { background: var(--field); border: 1px solid var(--border); color: var(--text-muted); padding: 7px; border-radius: 6px; font-size: .75rem; font-family: 'JetBrains Mono', monospace; cursor: pointer; transition: all .2s; }
+    .btn-preset:hover { background: var(--border); color: var(--text); }
+    .section-title { font-size: .8rem; font-weight: 600; margin: 22px 0 10px; color: var(--text); }
+    .hint { font-size: .7rem; color: var(--text-muted); margin-top: 6px; line-height: 1.4; }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Inter', sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
+    .level { border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 10px; background: var(--field); }
+    .level.sl { border-color: rgba(239,68,68,.3); background: var(--red-glow); }
+    .level.tp { border-color: rgba(16,185,129,.25); }
+    .level-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+    .level-name { font-size: .8rem; font-weight: 600; }
+    .level.tp .level-name { color: var(--green); }
+    .level.sl .level-name { color: var(--red); }
+    .level-value { font-family: 'JetBrains Mono', monospace; font-size: 1.15rem; font-weight: 700; }
+    .level.tp .level-value { color: var(--green); }
+    .level.sl .level-value { color: var(--red); }
+    .level-sub { font-family: 'JetBrains Mono', monospace; font-size: .7rem; color: var(--text-muted); margin-top: 8px; }
+    .mini-label { font-size: .68rem; color: var(--text-muted); margin-bottom: 4px; }
 
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
+    .scenarios { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .sc-row { display: flex; justify-content: space-between; gap: 12px; padding: 11px 12px; font-size: .8rem; border-bottom: 1px solid var(--border); }
+    .sc-row:last-child { border-bottom: 0; }
+    .sc-row span:first-child { color: var(--text-muted); }
+    .sc-row .num { font-family: 'JetBrains Mono', monospace; font-weight: 700; white-space: nowrap; }
+    .pos { color: var(--green); } .neg { color: var(--red); } .neu { color: var(--text); }
 
-    .container {
-      width: 100%;
-      max-width: 460px;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 28px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-    }
+    .ratio-bar { margin-top: 12px; background: var(--field); border: 1px solid var(--border); border-radius: 10px; padding: 12px; display: flex; justify-content: space-between; align-items: center; }
+    .ratio-bar .label { font-size: .8rem; color: var(--text-muted); margin: 0; }
+    .ratio-bar .val { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--accent); }
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .header h1 {
-      font-size: 1.1rem;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      color: var(--text);
-    }
-
-    .tag {
-      background: rgba(59, 130, 246, 0.1);
-      color: var(--accent);
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      font-family: 'JetBrains Mono', monospace;
-      border: 1px solid rgba(59, 130, 246, 0.2);
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    label {
-      display: block;
-      font-size: 0.825rem;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-      font-weight: 500;
-    }
-
-    input, select {
-      width: 100%;
-      background: #0d1117;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 14px;
-      color: var(--text);
-      font-size: 1rem;
-      font-family: 'JetBrains Mono', monospace;
-      outline: none;
-      transition: all 0.2s ease;
-    }
-
-    input:focus, select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-    }
-
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    .preset-btns {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-      margin-top: 8px;
-    }
-
-    .btn-preset {
-      background: #0d1117;
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      padding: 6px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-family: 'JetBrains Mono', monospace;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-preset:hover {
-      background: var(--border);
-      color: var(--text);
-    }
-
-    .results-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-top: 28px;
-    }
-
-    .card-result {
-      padding: 16px;
-      border-radius: 12px;
-      border: 1px solid transparent;
-    }
-
-    .card-tp {
-      background: var(--green-glow);
-      border-color: rgba(16, 185, 129, 0.3);
-    }
-
-    .card-sl {
-      background: var(--red-glow);
-      border-color: rgba(239, 68, 68, 0.3);
-    }
-
-    .card-result .title {
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 6px;
-    }
-
-    .card-tp .title { color: var(--green); }
-    .card-sl .title { color: var(--red); }
-
-    .card-result .value {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 1.35rem;
-      font-weight: 700;
-    }
-
-    .card-tp .value { color: var(--green); }
-    .card-sl .value { color: var(--red); }
-
-    .card-result .sub {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      margin-top: 4px;
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    .ratio-bar {
-      margin-top: 20px;
-      background: #0d1117;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .ratio-bar .label {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    .ratio-bar .val {
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 700;
-      color: var(--accent);
-    }
+    .risk-box { border: 1px solid var(--border); border-radius: 12px; padding: 12px; background: var(--field); }
+    .risk-line { display: flex; justify-content: space-between; font-size: .8rem; margin-top: 10px; color: var(--text-muted); }
+    .risk-line b { font-family: 'JetBrains Mono', monospace; color: var(--text); }
+    .btn-apply { margin-top: 10px; width: 100%; background: rgba(59,130,246,.1); color: var(--accent); border: 1px solid rgba(59,130,246,.3); border-radius: 8px; padding: 9px; font-size: .8rem; font-weight: 600; cursor: pointer; }
+    .btn-apply:disabled { opacity: .4; cursor: default; }
+    .warn { display: none; margin-top: 8px; font-size: .75rem; color: var(--amber); }
+    .btn-reset { margin-top: 18px; width: 100%; background: transparent; color: var(--text-muted); border: 1px solid var(--border); border-radius: 8px; padding: 9px; font-size: .75rem; cursor: pointer; }
   </style>
 </head>
 <body>
-
   <div class="container">
     <div class="header">
       <h1>Calculadora MNQ</h1>
       <span class="tag">0.01 = $0,50 / tick</span>
     </div>
 
-    <!-- Modo de Entrada -->
-    <div class="form-group">
-      <label for="input-mode">Unidade dos Alvos</label>
-      <select id="input-mode">
-        <option value="ticks" selected>Ticks</option>
-        <option value="points">Pontos (1 Ponto = 4 Ticks)</option>
-      </select>
+    <div class="row">
+      <div class="form-group">
+        <label for="input-mode">Unidade dos alvos</label>
+        <select id="input-mode">
+          <option value="ticks" selected>Ticks</option>
+          <option value="points">Pontos (1 pt = 4 ticks)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="direction">Direção</label>
+        <select id="direction">
+          <option value="1" selected>Compra (Long)</option>
+          <option value="-1">Venda (Short)</option>
+        </select>
+      </div>
     </div>
 
-    <!-- Lote -->
     <div class="form-group">
-      <label for="contracts">Lote Utilizado</label>
-      <input type="number" id="contracts" value="0.01" step="0.01" min="0.01">
+      <label for="contracts">Lote utilizado</label>
+      <input type="number" id="contracts" value="0.01" step="0.01" min="0.01" inputmode="decimal">
       <div class="preset-btns">
         <button class="btn-preset" onclick="setContracts(0.01)">0.01</button>
         <button class="btn-preset" onclick="setContracts(0.05)">0.05</button>
@@ -250,103 +109,194 @@
       </div>
     </div>
 
-    <div class="row">
-      <!-- TP -->
-      <div class="form-group">
-        <label for="tp" id="label-tp">Take Profit (Ticks)</label>
-        <input type="number" id="tp" value="100" step="1">
-      </div>
-
-      <!-- SL -->
-      <div class="form-group">
-        <label for="sl" id="label-sl">Stop Loss (Ticks)</label>
-        <input type="number" id="sl" value="200" step="1">
-      </div>
+    <div class="form-group">
+      <label for="entry">Preço de entrada (opcional, mostra os preços dos níveis)</label>
+      <input type="number" id="entry" step="0.25" placeholder="ex.: 21450.25" inputmode="decimal">
     </div>
 
-    <!-- Resultados -->
-    <div class="results-grid">
-      <div class="card-result card-tp">
-        <div class="title">Ganho (TP)</div>
-        <div class="value" id="tp-res">$0.00</div>
-        <div class="sub" id="tp-sub">0 Ticks / 0 Pts</div>
+    <div class="section-title">Stop Loss</div>
+    <div class="level sl">
+      <div class="level-head">
+        <span class="level-name">Risco (SL)</span>
+        <span class="level-value" id="sl-res">-$0.00</span>
       </div>
-
-      <div class="card-result card-sl">
-        <div class="title">Risco (SL)</div>
-        <div class="value" id="sl-res">-$0.00</div>
-        <div class="sub" id="sl-sub">0 Ticks / 0 Pts</div>
-      </div>
+      <div class="mini-label" id="label-sl">Stop Loss (Ticks)</div>
+      <input type="number" id="sl" value="200" step="1" inputmode="decimal">
+      <div class="level-sub" id="sl-sub">0 Ticks / 0 Pts</div>
     </div>
 
-    <!-- Risk / Reward -->
+    <div class="section-title">Take Profits (parciais)</div>
+
+    <div class="level tp">
+      <div class="level-head"><span class="level-name">TP1</span><span class="level-value" id="tp1-res">$0.00</span></div>
+      <div class="row">
+        <div><div class="mini-label" id="label-tp1">Alvo (Ticks)</div><input type="number" id="tp1" value="100" step="1" inputmode="decimal"></div>
+        <div><div class="mini-label">% da posição</div><input type="number" id="pct1" value="50" step="5" min="0" max="100" inputmode="decimal"></div>
+      </div>
+      <div class="level-sub" id="tp1-sub"></div>
+    </div>
+
+    <div class="level tp">
+      <div class="level-head"><span class="level-name">TP2</span><span class="level-value" id="tp2-res">$0.00</span></div>
+      <div class="row">
+        <div><div class="mini-label" id="label-tp2">Alvo (Ticks)</div><input type="number" id="tp2" value="200" step="1" inputmode="decimal"></div>
+        <div><div class="mini-label">% da posição</div><input type="number" id="pct2" value="30" step="5" min="0" max="100" inputmode="decimal"></div>
+      </div>
+      <div class="level-sub" id="tp2-sub"></div>
+    </div>
+
+    <div class="level tp">
+      <div class="level-head"><span class="level-name">TP3</span><span class="level-value" id="tp3-res">$0.00</span></div>
+      <div class="row">
+        <div><div class="mini-label" id="label-tp3">Alvo (Ticks)</div><input type="number" id="tp3" value="400" step="1" inputmode="decimal"></div>
+        <div><div class="mini-label">% da posição</div><input type="number" id="pct3" value="20" step="5" min="0" max="100" inputmode="decimal"></div>
+      </div>
+      <div class="level-sub" id="tp3-sub"></div>
+    </div>
+    <div class="hint">Deixe o alvo em 0 para desativar um TP. Cada resultado já considera só a parte da posição fechada naquele alvo.</div>
+    <div class="warn" id="warn-pct"></div>
+
+    <div class="section-title">Cenários da operação</div>
+    <div class="scenarios">
+      <div class="sc-row"><span>Stop direto (perde tudo)</span><span class="num neg" id="sc-stop">-$0.00</span></div>
+      <div class="sc-row"><span>TP1 e depois stop no restante</span><span class="num" id="sc-tp1-stop">$0.00</span></div>
+      <div class="sc-row"><span>TP1 e stop no breakeven</span><span class="num" id="sc-tp1-be">$0.00</span></div>
+      <div class="sc-row"><span>Todos os TPs atingidos</span><span class="num pos" id="sc-all">$0.00</span></div>
+    </div>
     <div class="ratio-bar">
-      <span class="label">Relação Risco : Retorno</span>
-      <span class="val" id="rr-ratio">1 : 0.50</span>
+      <span class="label">Risco : retorno (todos os TPs)</span>
+      <span class="val" id="rr-ratio">1 : --</span>
     </div>
+
+    <div class="section-title">Gestão de risco</div>
+    <div class="risk-box">
+      <div class="row">
+        <div><div class="mini-label">Saldo da conta ($)</div><input type="number" id="balance" placeholder="ex.: 1000" step="any" inputmode="decimal"></div>
+        <div><div class="mini-label">Risco por trade (%)</div><input type="number" id="riskpct" value="1" step="0.25" min="0" inputmode="decimal"></div>
+      </div>
+      <div class="risk-line"><span>Risco desta operação</span><b id="risk-now">--</b></div>
+      <div class="risk-line"><span>Lote máximo para o risco alvo</span><b id="risk-lot">--</b></div>
+      <button class="btn-apply" id="btn-apply" onclick="applySuggested()" disabled>Usar lote sugerido</button>
+    </div>
+
+    <button class="btn-reset" onclick="resetAll()">Restaurar valores padrão</button>
   </div>
 
   <script>
-    const contractsInput = document.getElementById('contracts');
-    const tpInput = document.getElementById('tp');
-    const slInput = document.getElementById('sl');
-    const inputMode = document.getElementById('input-mode');
+    const $ = id => document.getElementById(id);
+    const TICK_SIZE = 0.25;       // 1 tick = 0.25 ponto
+    const USD_PER_TICK_LOT = 50;  // lote 1.00 = $50 por tick (0.01 = $0,50)
+    const STORE_KEY = 'mnq-calc-v2';
+    const FIELDS = ['input-mode','direction','contracts','entry','sl','tp1','pct1','tp2','pct2','tp3','pct3','balance','riskpct'];
+    const DEFAULTS = { 'input-mode':'ticks', direction:'1', contracts:'0.01', entry:'', sl:'200', tp1:'100', pct1:'50', tp2:'200', pct2:'30', tp3:'400', pct3:'20', balance:'', riskpct:'1' };
+    let suggestedLot = 0;
 
-    const labelTp = document.getElementById('label-tp');
-    const labelSl = document.getElementById('label-sl');
+    const fmt = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const money = n => (n < 0 ? '-' : '') + '$' + fmt(Math.abs(n));
+    const num = id => parseFloat($(id).value) || 0;
+    const price = (entry, dir, ticks, sign) => (entry + dir * sign * ticks * TICK_SIZE).toFixed(2);
 
-    const tpRes = document.getElementById('tp-res');
-    const slRes = document.getElementById('sl-res');
-    const tpSub = document.getElementById('tp-sub');
-    const slSub = document.getElementById('sl-sub');
-    const rrRatio = document.getElementById('rr-ratio');
-
-    function calculate() {
-      const lote = parseFloat(contractsInput.value) || 0;
-      const rawTp = parseFloat(tpInput.value) || 0;
-      const rawSl = parseFloat(slInput.value) || 0;
-      const isPoints = inputMode.value === 'points';
-
-      labelTp.textContent = isPoints ? 'Take Profit (Pontos)' : 'Take Profit (Ticks)';
-      labelSl.textContent = isPoints ? 'Stop Loss (Pontos)' : 'Stop Loss (Ticks)';
-
-      const tpTicks = isPoints ? rawTp * 4 : rawTp;
-      const slTicks = isPoints ? rawSl * 4 : rawSl;
-
-      const tpPoints = tpTicks / 4;
-      const slPoints = slTicks / 4;
-
-      const valorPorTick = lote * 50;
-
-      const tpDollar = tpTicks * valorPorTick;
-      const slDollar = slTicks * valorPorTick;
-
-      tpRes.textContent = `$${tpDollar.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      slRes.textContent = `-$${slDollar.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-      tpSub.textContent = `${tpTicks} Ticks (${tpPoints} Pts)`;
-      slSub.textContent = `${slTicks} Ticks (${slPoints} Pts)`;
-
-      if (slTicks > 0) {
-        const ratio = (tpTicks / slTicks).toFixed(2);
-        rrRatio.textContent = `1 : ${ratio}`;
-      } else {
-        rrRatio.textContent = `1 : --`;
-      }
+    function paint(id, value) {
+      const el = $(id);
+      el.textContent = money(value);
+      el.classList.remove('pos', 'neg', 'neu');
+      el.classList.add(value > 0 ? 'pos' : value < 0 ? 'neg' : 'neu');
     }
 
-    function setContracts(val) {
-      contractsInput.value = val;
+    function calculate() {
+      const lote = Math.round(num('contracts') * 100) / 100;
+      const isPoints = $('input-mode').value === 'points';
+      const f = isPoints ? 4 : 1;
+      const unit = isPoints ? 'Pontos' : 'Ticks';
+      const dir = parseInt($('direction').value, 10);
+      const entry = parseFloat($('entry').value);
+      const hasEntry = !isNaN(entry);
+      const perTick = lote * USD_PER_TICK_LOT;
+
+      $('label-sl').textContent = `Stop Loss (${unit})`;
+      [1,2,3].forEach(i => $('label-tp' + i).textContent = `Alvo (${unit})`);
+
+      // Stop
+      const slTicks = num('sl') * f;
+      const risk = slTicks * perTick;
+      $('sl-res').textContent = '-$' + fmt(risk);
+      $('sl-sub').textContent = `${slTicks} Ticks / ${slTicks / 4} Pts` + (hasEntry ? ` · preço ${price(entry, dir, slTicks, -1)}` : '');
+
+      // Take profits
+      const tps = [1,2,3].map(i => {
+        const ticks = num('tp' + i) * f;
+        const pct = num('pct' + i);
+        const active = ticks > 0 && pct > 0;
+        const gain = active ? ticks * perTick * (pct / 100) : 0;
+        return { i, ticks, pct, active, gain };
+      });
+
+      tps.forEach(t => {
+        paint('tp' + t.i + '-res', t.gain);
+        $('tp' + t.i + '-sub').textContent = t.active
+          ? `${t.ticks} Ticks / ${t.ticks / 4} Pts · fecha ${t.pct}% (${(lote * t.pct / 100).toFixed(3)} lote)` + (hasEntry ? ` · preço ${price(entry, dir, t.ticks, 1)}` : '')
+          : 'Desativado';
+      });
+
+      // Warning when % doesn't sum to 100
+      const active = tps.filter(t => t.active);
+      const sumPct = active.reduce((s, t) => s + t.pct, 0);
+      const warn = $('warn-pct');
+      if (active.length && Math.abs(sumPct - 100) > 0.001) {
+        warn.style.display = 'block';
+        warn.textContent = `As parciais somam ${sumPct}%. Ajuste para 100% para fechar a posição inteira.`;
+      } else { warn.style.display = 'none'; }
+
+      // Scenarios
+      const totalAll = active.reduce((s, t) => s + t.gain, 0);
+      const first = active[0];
+      const remaining = first ? Math.max(0, 100 - first.pct) / 100 : 1;
+      paint('sc-stop', -risk);
+      paint('sc-tp1-stop', first ? first.gain - slTicks * perTick * remaining : -risk);
+      paint('sc-tp1-be', first ? first.gain : 0);
+      paint('sc-all', totalAll);
+
+      $('rr-ratio').textContent = (risk > 0 && totalAll > 0) ? `1 : ${(totalAll / risk).toFixed(2)}` : '1 : --';
+
+      // Risk management
+      const balance = num('balance');
+      const riskPct = num('riskpct');
+      if (balance > 0) {
+        $('risk-now').textContent = `${(risk / balance * 100).toFixed(2)}% (${money(risk)})`;
+        const maxRiskUsd = balance * riskPct / 100;
+        suggestedLot = (slTicks > 0 && riskPct > 0) ? Math.floor(maxRiskUsd / (slTicks * USD_PER_TICK_LOT) * 100) / 100 : 0;
+        $('risk-lot').textContent = suggestedLot >= 0.01 ? suggestedLot.toFixed(2) : 'abaixo de 0.01';
+      } else {
+        $('risk-now').textContent = '--';
+        $('risk-lot').textContent = '--';
+        suggestedLot = 0;
+      }
+      $('btn-apply').disabled = suggestedLot < 0.01;
+
+      save();
+    }
+
+    function setContracts(v) { $('contracts').value = v; calculate(); }
+    function applySuggested() { if (suggestedLot >= 0.01) setContracts(suggestedLot.toFixed(2)); }
+
+    function save() {
+      try { localStorage.setItem(STORE_KEY, JSON.stringify(Object.fromEntries(FIELDS.map(k => [k, $(k).value])))); } catch (e) {}
+    }
+    function load() {
+      try {
+        const data = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+        if (data) FIELDS.forEach(k => { if (data[k] !== undefined) $(k).value = data[k]; });
+      } catch (e) {}
+    }
+    function resetAll() {
+      FIELDS.forEach(k => $(k).value = DEFAULTS[k]);
       calculate();
     }
 
-    [contractsInput, tpInput, slInput, inputMode].forEach(input => {
-      input.addEventListener('input', calculate);
-    });
-
+    FIELDS.forEach(k => $(k).addEventListener('input', calculate));
+    load();
     calculate();
 
-    // Registro do Service Worker para cache offline e instalação
     if ('serviceWorker' in navigator) {
       const swCode = `
         self.addEventListener('install', e => self.skipWaiting());
